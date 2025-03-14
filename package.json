@@ -1,0 +1,13 @@
+{
+  "name": "job-finder",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/AmmonBurgi/job-finder.git",
+  "author": "Ammon Burgi <ammonburgi@gmail.com>",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "openai": "^4.87.3"
+  }
+}
