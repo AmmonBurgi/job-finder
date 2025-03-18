@@ -8,6 +8,8 @@
   "type": "module",
   "dependencies": {
     "dotenv": "^16.4.7",
-    "openai": "^4.87.3"
+    "linkedin-jobs-api": "^1.0.6",
+    "openai": "^4.87.3",
+    "puppeteer": "^24.4.0"
   }
 }
