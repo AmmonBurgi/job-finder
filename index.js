@@ -6,45 +6,46 @@ DotEnv.config();
 
 import puppeteer from 'puppeteer';
 
+// Values can be CSS selectors or text values. 
 const FILTER_SELECTORS = {
   datePosted: {
-    any: '#advanced-filter-timePostedRange-',
-    past24hr: '#advanced-filter-timePostedRange-r86400',
-    pastWeek: '#advanced-filter-timePostedRange-r604800',
-    pastMonth: '#advanced-filter-timePostedRange-r2592000',
+    any: 'text=Any time',
+    past24hr: 'text=Past 24 hours',
+    pastWeek: 'text=Past week',
+    pastMonth: 'text=Past month',
   },
   experienceLevel: {
-    internship: '#advanced-filter-experience-1',
-    entryLevel: '#advanced-filter-experience-2',
-    associate: '#advanced-filter-experience-3',
-    midSeniorLevel: '#advanced-filter-experience-4',
-    director: '#advanced-filter-experience-5',
-    executive: '#advanced-filter-experience-6',
+    internship: 'text=Internship',
+    entryLevel: 'text=Entry level',
+    associate: 'text=Associate',
+    midSeniorLevel: 'text=Mid-Senior level',
+    director: 'text=Director',
+    executive: 'text=Executive',
   },
   salary: {
-    fortyPlus: '',
-    sixtyPlus: '',
-    eightyPlus: '',
-    hundredPlus: '',
-    hundredTwentyPlus: '',
-    hundredFortyPlus: '',
-    hundredSixtyPlus: '',
-    hundredEightyPlus: '',
-    twoHundredPlus: '',
+    fortyPlus: 'text=$40,000+',
+    sixtyPlus: 'text=$60,000+',
+    eightyPlus: 'text=$80,000+',
+    hundredPlus: 'text=$100,000+',
+    hundredTwentyPlus: 'text=$120,000+',
+    hundredFortyPlus: 'text=$140,000+',
+    hundredSixtyPlus: 'text=$160,000+',
+    hundredEightyPlus: 'text=$180,000+',
+    twoHundredPlus: 'text=$200,000+',
   }, 
   jobType: {
-    fullTime: '',
-    partTime: '',
-    contract: '',
-    temporary: '',
-    internship: '',
-    volunteer: '',
-    other: '',
+    fullTime: 'text=Full-time',
+    partTime: 'text=Part-time',
+    contract: 'text=Contract',
+    temporary: 'text=Temporary',
+    internship: 'text=Internship',
+    volunteer: 'text=Volunteer',
+    other: 'text=Other',
   },
   remote: {
-    onSite: '',
-    remote: '',
-    hybrid: '',
+    onSite: 'text=On-site',
+    remote: 'text=Remote',
+    hybrid: 'text=Hybrid',
   }
 }
 
@@ -72,16 +73,25 @@ const filterOptions = async (page, {
   experienceLevel,
   salary,
   jobType,
-  remote,
+  remoteOptions,
 }) => {
   try {
     console.log('---Filtering---');
 
+    // Click on the "All filters" button to open the filters modal.
     await page.locator('text=All filters').click();
 
-    console.log(FILTER_SELECTORS.datePosted[datePosted]);
-    await page.locator(`#artdeco-modal-outlet ${FILTER_SELECTORS.datePosted[datePosted]}`).click();
+    await page.locator(FILTER_SELECTORS.datePosted[datePosted]).click();
+    await page.locator(FILTER_SELECTORS.experienceLevel[experienceLevel]).click();
+    await page.locator(FILTER_SELECTORS.salary[salary]).click();
+    await page.locator(FILTER_SELECTORS.jobType[jobType]).click();
 
+    for (const option of remoteOptions) {
+      await page.locator(FILTER_SELECTORS.remote[option]).click();
+    }
+
+    // Click on the "Show results" button to apply the filters.
+    await page.locator('.reusable-search-filters-buttons.search-reusables__secondary-filters-show-results-button.artdeco-button.artdeco-button--2.artdeco-button--primary.ember-view').click();
   } catch (error) {
     console.error("Filtering failed: ", error);
   }
@@ -116,10 +126,10 @@ const triggerScraping = async () => {
 
     await filterOptions(page, {
       datePosted: 'past24hr',
-      experienceLevel: 'entry level',
-      salary: '80000',
-      jobType: 'full time',
-      remote: []
+      experienceLevel: 'associate',
+      salary: 'hundredPlus',
+      jobType: 'fullTime',
+      remoteOptions: ['onSite', 'hybrid'],
     })
     
     // await browser.close();
