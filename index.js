@@ -6,6 +6,12 @@ DotEnv.config();
 
 import puppeteer from 'puppeteer';
 
+// Title can be a job title, skill, or company.
+const TITLE_SEARCH = 'Software Engineer';
+
+// Location can be a city, state, zip, or country.
+const LOCATION_SEARCH = 'Texas, United States';
+
 // Values can be CSS selectors or text values. 
 const FILTER_SELECTORS = {
   datePosted: {
@@ -66,7 +72,13 @@ const FILTER_SELECTORS = {
 //   }
 // }
 
-const browser = await puppeteer.launch({headless: false});
+const jobData = [];
+
+const browser = await puppeteer.launch({
+  headless: false, 
+  args: ['--start-maximized'],
+  slowMo: 25,
+});
 
 const filterOptions = async (page, {
   datePosted,
@@ -97,12 +109,82 @@ const filterOptions = async (page, {
   }
 }
 
+const startSearch = async (page, title, location) => {
+  try {
+    // Start the initial search, providing the title and location.
+    await page.locator('input[aria-label="Search by title, skill, or company"]').fill(title);
+    await page.locator('input[aria-label="City, state, or zip code"]').fill(location);
+    await page.keyboard.press('Enter');
+
+  } catch (error) {
+    console.error("Search failed: ", error);
+  }
+}
+
+const extractJobData = async (page) => {
+  try {
+    const jobPostings = await page.$$('.scaffold-layout__list  > div:nth-of-type(1) > ul:nth-of-type(1) > li');
+
+    console.log(jobPostings);
+
+    const title = await jobPostings[0].$eval(
+      'div.artdeco-entity-lockup__subtitle.ember-view span',
+      el => el.textContent.trim()
+    )
+
+    console.log(title);
+
+    // await jobPostings[2].hover();
+    // await jobPostings[2].click();
+
+    // for (const job of jobPostings) {
+    //   await job.hover();
+    //   await new Promise(r => setTimeout(r, 1000));
+
+    //   await job.click();
+    // }
+    // JzCuYMRlpzSbHlgzFEGWRwUdUIOYMKbs
+    // JzCuYMRlpzSbHlgzFEGWRwUdUIOYMKbs
+    // for (const jobPost of jobPostings) {
+    //   const title = await jobPost.$eval(
+    //     'h3.base-search-card__title', 
+    //     el => el.textContent.trim()
+    //   );
+      
+    //   const company = await jobPost.$eval(
+    //     'h4.base-search-card__subtitle', 
+    //     el => el.textContent.trim()
+    //   );
+    
+    //   const location = await jobPost.$eval(
+    //     'span.job-search-card__location',
+    //     el => el.textContent.trim()
+    //   );
+    
+    //   const url = await jobPost.$eval(
+    //     'a.base-card__full-link', 
+    //     el => el.href
+    //   );
+    
+    //   jobData.push({title, company, location, url});
+    // }
+  } catch (error) {
+    console.error("Extracting job details failed: ", error);
+  }
+}
+
 const triggerScraping = async () => {
   try {
     console.log('---Launching Puppeteer---');
 
     // Launch the browser and open a new blank page
     const page = await browser.newPage();
+  
+    const screen = await page.evaluate(() => ({
+      width: window.screen.availWidth,
+      height: window.screen.availHeight
+    }));
+    await page.setViewport(screen);
     
     // Navigate the page to Linkedin.
     await page.goto('https://www.linkedin.com');
@@ -116,22 +198,19 @@ const triggerScraping = async () => {
 
     await page.goto('https://www.linkedin.com/jobs/search');
 
-    // await page
-    //   .locator('button')
-    //   .filter(button => button.innerText == 'All filters')
-    //   .click();
-
-    // const [button] = await page.$x('//button[contains(text(), "All filters")]');
-    // if (button) await button.click();
+    await startSearch(page, TITLE_SEARCH, LOCATION_SEARCH);
 
     await filterOptions(page, {
-      datePosted: 'past24hr',
+      datePosted: 'pastWeek',
       experienceLevel: 'associate',
       salary: 'hundredPlus',
       jobType: 'fullTime',
       remoteOptions: ['onSite', 'hybrid'],
     })
+
+    console.log('---Search complete---')
     
+    await extractJobData(page);
     // await browser.close();
   } catch (error) {
     console.error("Puppeteer failed:", error);
