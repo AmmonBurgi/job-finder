@@ -143,8 +143,7 @@ const extractJobData = async (page) => {
 
     //   await job.click();
     // }
-    // JzCuYMRlpzSbHlgzFEGWRwUdUIOYMKbs
-    // JzCuYMRlpzSbHlgzFEGWRwUdUIOYMKbs
+
     // for (const jobPost of jobPostings) {
     //   const title = await jobPost.$eval(
     //     'h3.base-search-card__title', 
